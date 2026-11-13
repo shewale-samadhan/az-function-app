@@ -1,35 +1,24 @@
 import azure.functions as func
-import logging
+import azure.durable_functions as df
 
-app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
+from functions.timer_function import bp as timer_bp
+from functions.orchestrator_function import bp as orchestrator_bp
+from functions.orders_function import bp as orders_bp
+from functions.customers_function import bp as customers_bp
+from functions.products_function import bp as products_bp
+from functions.audit_function import bp as audit_bp
+from functions.email_function import bp as email_bp
 
-@app.route(route="githubToSqlFunctionDemo")
-def githubToSqlFunctionDemo(req: func.HttpRequest) -> func.HttpResponse:
-    logging.info('Python HTTP trigger function processed a request.')
+app = df.DFApp(http_auth_level=func.AuthLevel.FUNCTION)
 
-    name = req.params.get('name')
-    if not name:
-        try:
-            req_body = req.get_json()
-        except ValueError:
-            pass
-        else:
-            name = req_body.get('name')
-
-    if name:
-        return func.HttpResponse(f"Hello, {name}. This HTTP triggered function executed successfully.")
-    else:
-        return func.HttpResponse(
-             "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response.",
-             status_code=200
-        )
-
-@app.route(route="customerDataFunction")
-def customerDataFunction(req: func.HttpRequest) -> func.HttpResponse:
-
-    logging.info("Customer data function executed.")
-
-    return func.HttpResponse(
-        "Customer Data Function executed successfully!",
-        status_code=200
-    )
+# Register every modular Durable Functions blueprint.
+for blueprint in (
+    timer_bp,
+    orchestrator_bp,
+    orders_bp,
+    customers_bp,
+    products_bp,
+    audit_bp,
+    email_bp,
+):
+    app.register_functions(blueprint)
