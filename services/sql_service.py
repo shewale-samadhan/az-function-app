@@ -1,3 +1,4 @@
+
 import csv
 import io
 import re
@@ -39,6 +40,13 @@ def _connection_string() -> str:
     )
 
 
+def get_sql_connection():
+    """
+    Establish and return a connection to Azure SQL Database.
+    """
+    return pyodbc.connect(_connection_string())
+
+
 def insert_csv(csv_content: bytes, table_name: str, batch_size: int = 500) -> int:
     """
     Insert CSV rows into an existing SQL table.
@@ -62,27 +70,35 @@ def insert_csv(csv_content: bytes, table_name: str, batch_size: int = 500) -> in
     quoted_table = _quote_table_name(table_name)
     quoted_columns = ", ".join(f"[{column}]" for column in headers)
     placeholders = ", ".join("?" for _ in headers)
+
     sql = (
         f"INSERT INTO {quoted_table} ({quoted_columns}) "
         f"VALUES ({placeholders})"
     )
 
     total_inserted = 0
-    connection = pyodbc.connect(_connection_string())
+
+    # Use the reusable SQL connection function
+    connection = get_sql_connection()
+
     try:
         cursor = connection.cursor()
         cursor.fast_executemany = True
 
         batch = []
+
         for row in reader:
             if not row:
                 continue
+
             if len(row) != len(headers):
                 raise ValueError(
                     f"CSV row has {len(row)} values; expected {len(headers)}."
                 )
 
-            batch.append(tuple(value if value != "" else None for value in row))
+            batch.append(
+                tuple(value if value != "" else None for value in row)
+            )
 
             if len(batch) >= batch_size:
                 cursor.executemany(sql, batch)
@@ -99,5 +115,6 @@ def insert_csv(csv_content: bytes, table_name: str, batch_size: int = 500) -> in
     except Exception:
         connection.rollback()
         raise
+
     finally:
         connection.close()
