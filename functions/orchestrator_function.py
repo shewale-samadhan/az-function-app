@@ -1,5 +1,6 @@
 import azure.durable_functions as df
-
+from datetime import timedelta
+import logging
 bp = df.Blueprint()
 
 
@@ -15,15 +16,21 @@ def etl_orchestrator(context: df.DurableOrchestrationContext):
 
     try:
         # Sequential ingestion: orders -> customers -> products.
-        # results.append(
-        #     (yield context.call_activity("orders_activity", {}))
-        # )
+        logging.info("Customers activity started. Sleeping for 20 minutes.")
+        yield context.create_timer(context.current_utc_datetime + timedelta(minutes=20))
+        results.append(
+            (yield context.call_activity("orders_activity", {}))
+        )
+
+        logging.info("Customers activity started. Sleeping for 30 minutes.")
+        yield context.create_timer(context.current_utc_datetime + timedelta(minutes=30))
         results.append(
             (yield context.call_activity("customers_activity", {}))
         )
-        results.append(
-            (yield context.call_activity("products_activity", {}))
-        )
+
+        # results.append(
+        #     (yield context.call_activity("products_activity", {}))
+        # )
 
         summary = {
             "status": "Succeeded",

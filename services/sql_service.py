@@ -2,13 +2,23 @@
 import csv
 import io
 import re
-
+import logging, time 
 import pyodbc
 
 from shared.config import required_setting, setting
 
 _IDENTIFIER = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 
+def _get_connection(retries=4, delay=15):
+    last_exc = None
+    for attempt in range(1, retries + 1):
+        try:
+            return pyodbc.connect(_connection_string(), timeout=60)
+        except pyodbc.OperationalError as exc:
+            last_exc = exc
+            logging.warning("SQL connect %d/%d failed: %s", attempt, retries, exc)
+            time.sleep(delay)
+    raise last_exc
 
 def _quote_table_name(table_name: str) -> str:
     """Validate and quote schema.table to avoid SQL identifier injection."""
@@ -36,7 +46,7 @@ def _connection_string() -> str:
         f"Pwd={password};"
         "Encrypt=yes;"
         "TrustServerCertificate=no;"
-        "Connection Timeout=30;"
+        "Connection Timeout=60;"
     )
 
 
@@ -77,10 +87,8 @@ def insert_csv(csv_content: bytes, table_name: str, batch_size: int = 500) -> in
     )
 
     total_inserted = 0
-
-    # Use the reusable SQL connection function
-    connection = get_sql_connection()
-
+    # connection = pyodbc.connect(_connection_string())
+    connection = _get_connection()
     try:
         cursor = connection.cursor()
         cursor.fast_executemany = True

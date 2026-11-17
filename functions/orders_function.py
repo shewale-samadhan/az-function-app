@@ -1,5 +1,5 @@
 import logging
-
+import time 
 import azure.durable_functions as df
 
 from services.github_service import download_csv
@@ -12,10 +12,8 @@ bp = df.Blueprint()
 @bp.activity_trigger(input_name="payload")
 def orders_activity(payload: dict) -> dict:
     csv_path = setting("ORDERS_CSV_PATH", "olist_orders_dataset.csv")
-    table_name = setting("ORDERS_SQL_TABLE", "dbo.order_items")
-    logging.info("============================================================================")
-    logging.info("============================================================================")
-
+    table_name = setting("ORDERS_SQL_TABLE", "dbo.orders")
+    
     logging.info("Starting orders ingestion from GitHub path: %s", csv_path)
     csv_content = download_csv(csv_path)
     inserted = insert_csv(csv_content, table_name)
