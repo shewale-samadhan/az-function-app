@@ -1,5 +1,5 @@
 import logging
-
+import time
 import azure.durable_functions as df
 
 from services.github_service import download_csv
@@ -16,6 +16,7 @@ def customers_activity(payload: dict) -> dict:
 
     logging.info("Starting customers ingestion from GitHub path: %s", csv_path)
     csv_content = download_csv(csv_path)
+
     inserted = insert_csv(csv_content, table_name)
 
     result = {
