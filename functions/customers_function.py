@@ -95,6 +95,8 @@ def customers_activity(payload: dict) -> dict:
 
         logging.exception("Customers ingestion failed.")
 
+        # raise the error 
+
     finally:
 
         end_timestamp = datetime.now(timezone.utc)

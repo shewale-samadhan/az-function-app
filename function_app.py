@@ -6,7 +6,6 @@ from functions.orchestrator_function import bp as orchestrator_bp
 from functions.orders_function import bp as orders_bp
 from functions.customers_function import bp as customers_bp
 from functions.products_function import bp as products_bp
-from functions.audit_function import bp as audit_bp
 from functions.email_function import bp as email_bp
 
 app = df.DFApp(http_auth_level=func.AuthLevel.FUNCTION)

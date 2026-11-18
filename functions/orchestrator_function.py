@@ -15,31 +15,31 @@ def etl_orchestrator(context: df.DurableOrchestrationContext):
     results = []
 
     try:
-        # Sequential ingestion: orders -> customers -> products.
-        
-        # results.append(
-        #     (yield context.call_activity("orders_activity", {}))
-        # )
 
-        # summary = {
-        #         "status": "Succeeded",
-        #         "results": results,
-        # }
-        # yield context.call_activity("audit_activity", summary)
-        # =======================================================================
-        # =======================================================================
-        
-        
-        yield context.call_activity( "customers_activity", {
-            "run_id": context.instance_id   
-            }
-        )
         # =======================================================================
         # =======================================================================
 
+        yield context.call_activity("orders_activity", {"run_id": context.instance_id} )
 
-        # yield context.call_activity("email_activity", summary)
-        # return summary
+
+        # =======================================================================
+        # =======================================================================
+
+        yield context.call_activity( "customers_activity", {"run_id": context.instance_id } )
+        
+        
+        # =======================================================================
+        # =======================================================================
+
+        yield context.call_activity( "products_activity", {"run_id": context.instance_id } )
+
+        success = {
+                    "status": "success",
+                    "completed_results": results,
+                    "error": "",
+                }
+        
+        yield context.call_activity("email_activity", success)
 
     except Exception as exc:
         # Activity failures are captured here so audit/notification activities
@@ -50,6 +50,5 @@ def etl_orchestrator(context: df.DurableOrchestrationContext):
             "error": str(exc),
         }
 
-        yield context.call_activity("audit_activity", failure)
         yield context.call_activity("email_activity", failure)
         raise
