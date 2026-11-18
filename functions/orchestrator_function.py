@@ -16,30 +16,30 @@ def etl_orchestrator(context: df.DurableOrchestrationContext):
 
     try:
         # Sequential ingestion: orders -> customers -> products.
-        logging.info("Customers activity started. Sleeping for 20 minutes.")
-        yield context.create_timer(context.current_utc_datetime + timedelta(minutes=20))
-        results.append(
-            (yield context.call_activity("orders_activity", {}))
-        )
-
-        logging.info("Customers activity started. Sleeping for 30 minutes.")
-        yield context.create_timer(context.current_utc_datetime + timedelta(minutes=30))
-        results.append(
-            (yield context.call_activity("customers_activity", {}))
-        )
-
+        
         # results.append(
-        #     (yield context.call_activity("products_activity", {}))
+        #     (yield context.call_activity("orders_activity", {}))
         # )
 
-        summary = {
-            "status": "Succeeded",
-            "results": results,
-        }
+        # summary = {
+        #         "status": "Succeeded",
+        #         "results": results,
+        # }
+        # yield context.call_activity("audit_activity", summary)
+        # =======================================================================
+        # =======================================================================
+        
+        
+        yield context.call_activity( "customers_activity", {
+            "run_id": context.instance_id   
+            }
+        )
+        # =======================================================================
+        # =======================================================================
 
-        yield context.call_activity("audit_activity", summary)
-        yield context.call_activity("email_activity", summary)
-        return summary
+
+        # yield context.call_activity("email_activity", summary)
+        # return summary
 
     except Exception as exc:
         # Activity failures are captured here so audit/notification activities

@@ -49,14 +49,6 @@ def _connection_string() -> str:
         "Connection Timeout=60;"
     )
 
-
-def get_sql_connection():
-    """
-    Establish and return a connection to Azure SQL Database.
-    """
-    return pyodbc.connect(_connection_string())
-
-
 def insert_csv(csv_content: bytes, table_name: str, batch_size: int = 500) -> int:
     """
     Insert CSV rows into an existing SQL table.

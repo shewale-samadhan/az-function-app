@@ -18,7 +18,6 @@ for blueprint in (
     orders_bp,
     customers_bp,
     products_bp,
-    audit_bp,
     email_bp,
 ):
     app.register_functions(blueprint)

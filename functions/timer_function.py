@@ -7,8 +7,8 @@ bp = df.Blueprint()
 
 # Azure Functions timer schedules use NCRONTAB and are interpreted in UTC
 # unless the hosting platform explicitly supports/configures another timezone.
-# ETL_CRON = os.getenv("ETL_CRON", "0 0 20 * * *")  # Default: daily at 02:00 UTC
-ETL_CRON = os.getenv("ETL_CRON", "0 */60 * * * *")  # Default: after every 10 min
+ETL_CRON = os.getenv("ETL_CRON", "0 0 20 * * *")  # Default: daily at 02:00 UTC
+# ETL_CRON = os.getenv("ETL_CRON", "0 */10 * * * *")  # Default: after every 10 min
 
 
 @bp.timer_trigger(
