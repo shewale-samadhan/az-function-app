@@ -6,4 +6,10 @@ azure-functions
 azure-functions-durable>=1.2.2,<2.0.0
 requests>=2.32,<3
 pyodbc>=5,<6
+# azure-functions
+azure-communication-email
+msal
+# requests
+azure-identity
+azure-storage-blob
 
