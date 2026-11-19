@@ -558,6 +558,58 @@ def send_email(req: func.HttpRequest) -> func.HttpResponse:
             status_code=500
         )
 
+# --------------------------------------------------
+# 6. AUTOMATIC EMAIL TRIGGER
+# --------------------------------------------------
+
+@app.timer_trigger(
+    schedule="0 */2 * * * *",
+    arg_name="mytimer",
+    run_on_startup=False,
+    use_monitor=True
+)
+def automatic_email_trigger(mytimer: func.TimerRequest):
+
+    logging.info("Automatic email trigger started.")
+
+    try:
+        receiver = os.getenv("RECEIVER_EMAIL")
+
+        if not receiver:
+            raise ValueError(
+                "RECEIVER_EMAIL is not configured."
+            )
+
+        # Existing function retrieves the saved OAuth token.
+        # It does not start another Microsoft login.
+        send_graph_email(
+            recipients=receiver,
+            subject="Azure Function Deployment Test",
+            body=(
+                "Hello!\n\n"
+                "Your Azure Function App is running successfully.\n"
+                "Microsoft Graph email integration is working."
+            )
+        )
+
+        logging.info(
+            "Automatic email sent successfully to %s",
+            receiver
+        )
+
+    except LoginRequiredError:
+        logging.exception(
+            "Microsoft authentication is required. "
+            "Complete the initial OAuth login."
+        )
+        raise
+
+    except Exception:
+        logging.exception(
+            "Automatic email execution failed."
+        )
+        raise
+
 
 # import logging
 
