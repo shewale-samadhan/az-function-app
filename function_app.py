@@ -6,6 +6,7 @@ from functions.orchestrator_function import bp as orchestrator_bp
 from functions.orders_function import bp as orders_bp
 from functions.customers_function import bp as customers_bp
 from functions.products_function import bp as products_bp
+from functions.finalize_function import bp as finalize_bp
 from functions.email_function import bp as email_bp
 
 app = df.DFApp(http_auth_level=func.AuthLevel.FUNCTION)
@@ -17,6 +18,7 @@ for blueprint in (
     orders_bp,
     customers_bp,
     products_bp,
+    finalize_bp,
     email_bp,
 ):
     app.register_functions(blueprint)

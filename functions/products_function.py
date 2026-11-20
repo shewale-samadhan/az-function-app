@@ -1,28 +1,19 @@
-import logging
-
 import azure.durable_functions as df
 
-from services.github_service import download_csv
-from services.sql_service import insert_csv
-from shared.config import setting
+from services.ingestion_service import Dataset, run_ingestion
 
 bp = df.Blueprint()
+
+PRODUCTS = Dataset(
+    entity="products",
+    function_name="products_activity",
+    csv_path_setting="PRODUCTS_CSV_PATH",
+    csv_path_default="olist_products_dataset.csv",
+    table_setting="PRODUCTS_SQL_TABLE",
+    table_default="dbo.products",
+)
 
 
 @bp.activity_trigger(input_name="payload")
 def products_activity(payload: dict) -> dict:
-    csv_path = setting("PRODUCTS_CSV_PATH", "olist_products_dataset.csv")
-    table_name = setting("PRODUCTS_SQL_TABLE", "dbo.products")
-
-    logging.info("Starting products ingestion from GitHub path: %s", csv_path)
-    csv_content = download_csv(csv_path)
-    inserted = insert_csv(csv_content, table_name)
-
-    result = {
-        "dataset": "products",
-        "source": csv_path,
-        "destination": table_name,
-        "rows_inserted": inserted,
-    }
-    logging.info("Products ingestion completed: %s", result)
-    return result
+    return run_ingestion(PRODUCTS, payload["run_id"])
